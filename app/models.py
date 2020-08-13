@@ -1,23 +1,19 @@
-from flask_sqlalchemy import SQLAlchemy
+from app import db
 from sqlalchemy import inspect
 from sqlalchemy.sql import func
 from sqlalchemy.orm import backref
 from datetime import datetime
 import time
 
-db = SQLAlchemy()
+
+__all__ = ['User', 'Wallet', 'Funding']
 
 
 class BaseModel(db.Model):
+    __abstract__ = True
+
     print_filter = ()
     to_json_filter = ()
-
-    def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, {
-            column: value
-            for column, value in self._to_dict().items()
-            if column not in self.print_filter
-        })
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
