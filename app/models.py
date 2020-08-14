@@ -3,6 +3,7 @@ from sqlalchemy import inspect
 from sqlalchemy.sql import func
 from sqlalchemy.orm import backref
 from datetime import datetime
+from .utils import msisdn_formatter
 import time
 
 
@@ -55,8 +56,16 @@ class User(BaseModel):
     first_name = db.Column(db.String(255), nullable=True)
     last_name = db.Column(db.String(255), nullable=True)
     email = db.Column(db.String(255), nullable=True)
-    msisdn = db.Column(db.String(15), nullable=False, unique=True)
+    _msisdn = db.Column(db.String(15), nullable=False, unique=True)
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+
+    @property
+    def msisdn(self):
+        return self._msisdn
+
+    @msisdn.setter
+    def msisdn(self, value):
+        self._msisdn = msisdn_formatter(value)
 
 
 class Wallet(BaseModel):
