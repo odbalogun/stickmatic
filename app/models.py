@@ -68,6 +68,13 @@ class User(BaseModel):
     def msisdn(self, value):
         self._msisdn = msisdn_formatter(value)
 
+    @property
+    def purchase_history(self):
+        purchase_list = []
+        for x in self.wallet.purchase_history:
+            purchase_list.append(x.json)
+        return purchase_list
+
 
 class Wallet(BaseModel):
     __tablename__ = 'wallets'
@@ -97,3 +104,16 @@ class Funding(BaseModel):
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
 
     wallet = db.relationship('Wallet', backref='funding_history')
+
+
+class PurchaseHistory(BaseModel):
+    __tablename__ = 'purchase_history'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    wallet_id = db.Column(db.Integer, db.ForeignKey('wallets.id'), nullable=False)
+    products = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Integer, default=0)
+    wallet_balance = db.Column(db.Integer, default=0)
+    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+
+    wallet = db.relationship('Wallet', backref='purchase_history')

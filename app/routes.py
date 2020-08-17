@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 from .schemas import UserSchema, WalletSchema
-from .models import db, User, Wallet, Funding
+from .models import db, User, Wallet, Funding, PurchaseHistory
 from .utils import response_error, msisdn_formatter
 
 blueprint = Blueprint("api", __name__)
@@ -85,5 +85,26 @@ def deposit_endpoint(wallet_id):
     wallet.balance += data.get('amount')
     wallet.save()
 
+    schema = WalletSchema()
+    return jsonify(schema.dump(wallet))
+
+
+@blueprint.route('/wallets/<wallet_id>/purchase', methods=['POST'])
+def purchase_endpoint(wallet_id):
+    wallet = Wallet.query.filter(or_(Wallet.id == wallet_id, Wallet.uuid == wallet_id)).one_or_none()
+    if not wallet:
+        return response_error(404, "Wallet not found", 404)
+
+    data = request.get_json(force=True)
+    if 'products' not in data.keys() or 'price' not in data.keys():
+        return response_error(400, "Bad request. Products and price must be provided")
+
+    if data.get('price') > wallet.balance:
+        return response_error(400, "Bad request. Insufficient funds in wallet")
+
+    wallet.balance -= data.get('price')
+    wallet.purchase_history.append(PurchaseHistory(price=data.get('price'), wallet_balance=wallet.balance,
+                                                   products=data.get('products')))
+    wallet.save()
     schema = WalletSchema()
     return jsonify(schema.dump(wallet))

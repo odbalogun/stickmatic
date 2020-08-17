@@ -48,3 +48,42 @@ def test_for_incomplete_deposit_information(client, init_database):
     payload = {'amount': 3000}
     response = client.post(f'/api/wallets/{wallet.id}/deposit', data=json.dumps(payload))
     assert response.status_code == 400
+
+
+def test_for_successful_purchase(client, init_database):
+    wallet = Wallet.query.get(1)
+
+    # fund wallet
+    payload = {'amount': 20000, 'mode': "paystack"}
+    client.post(f'/api/wallets/{wallet.id}/deposit', data=json.dumps(payload))
+
+    # make purchase
+    payload = {'price': 10000, 'products': "1, 2, 4, 10, 99"}
+    response = client.post(f'/api/wallets/{wallet.id}/purchase', data=json.dumps(payload))
+    assert response.status_code == 200
+    data = response.json
+    assert wallet.id == data.get('id')
+    assert data.get('balance') == wallet.balance
+    assert len(data.get('purchase_history')) == len(wallet.purchase_history)
+
+
+def test_for_insufficient_funds(client, init_database):
+    wallet = Wallet.query.get(1)
+
+    # make purchase
+    payload = {'price': 1000000, 'products': "1, 2, 4, 10, 99"}
+    response = client.post(f'/api/wallets/{wallet.id}/purchase', data=json.dumps(payload))
+    assert response.status_code == 400
+
+
+def test_for_invalid_data(client, init_database):
+    wallet = Wallet.query.get(1)
+
+    # make purchase
+    payload = {'price': 10000}
+    response = client.post(f'/api/wallets/{wallet.id}/purchase', data=json.dumps(payload))
+    assert response.status_code == 400
+
+    payload = {'products': "1, 2, 4, 10, 99"}
+    response = client.post(f'/api/wallets/{wallet.id}/purchase', data=json.dumps(payload))
+    assert response.status_code == 400
