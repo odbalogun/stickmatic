@@ -5,6 +5,7 @@ from sqlalchemy.orm import backref
 from datetime import datetime
 from .utils import msisdn_formatter
 import time
+import uuid
 
 
 __all__ = ['User', 'Wallet', 'Funding']
@@ -72,12 +73,16 @@ class Wallet(BaseModel):
     __tablename__ = 'wallets'
 
     id = db.Column(db.Integer(), primary_key=True)
-    uuid = db.Column(db.String(255), nullable=False)
+    uuid = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     balance = db.Column(db.Integer, default=0)
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
 
     user = db.relationship('User', backref=backref('wallet', uselist=False))
+
+    def __init__(self):
+        # generate wallet uuid
+        self.uuid = str(uuid.uuid4()).rsplit('-', 1)[0]
 
 
 class Funding(BaseModel):
