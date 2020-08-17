@@ -1,6 +1,4 @@
-import json
 from app.models import Wallet
-from app.schemas import WalletSchema
 
 
 def test_retrieve_wallets(client, init_database):
@@ -13,7 +11,6 @@ def test_retrieve_wallets(client, init_database):
 
 def test_fetch_single_wallet(client, init_database):
     wallet = Wallet.query.get(1)
-    schema = WalletSchema()
 
     response = client.get(f'/api/wallets/{wallet.id}')
     assert response.status_code == 200

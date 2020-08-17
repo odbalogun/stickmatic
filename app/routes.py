@@ -30,13 +30,18 @@ def users_endpoint():
     return jsonify(schema.dump(user)), 201
 
 
-@blueprint.route('/users/<int:user_id>', methods=['PUT'])
+@blueprint.route('/users/<int:user_id>', methods=['GET', 'PUT'])
 def user_endpoint(user_id):
     # get user
-    user = User.query.get(user_id)
+    msisdn = msisdn_formatter(user_id)
+    user = User.query.filter(or_(User.id == user_id, User._msisdn == msisdn)).first()
 
     if not user:
         return response_error(404, "User not found", 404)
+
+    schema = UserSchema()
+    if request.method == 'GET':
+        return jsonify(schema.dump(user)), 200
 
     # update user
     data = request.get_json(force=True)
@@ -48,7 +53,6 @@ def user_endpoint(user_id):
         setattr(user, k, v)
     user.save()
 
-    schema = UserSchema()
     return jsonify(schema.dump(user)), 200
 
 

@@ -10,6 +10,20 @@ def test_retrieve_users(client, init_database):
     assert len(data) == 2
 
 
+def test_fetch_single_user(client, init_database):
+    user = User.query.get(1)
+
+    response = client.get(f'/api/users/{user.id}')
+    assert response.status_code == 200
+    data_1 = response.json
+    assert user.id == data_1.get('id')
+
+    response = client.get(f'/api/users/{user.msisdn}')
+    assert response.status_code == 200
+    data_2 = response.json
+    assert user.id == data_2.get('id')
+
+
 def test_for_user_creation(client, init_database):
     payload = dict(msisdn="09060801111")
     response = client.post('/api/users', data=json.dumps(payload))
