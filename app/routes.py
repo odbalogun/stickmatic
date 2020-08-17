@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 from .schemas import UserSchema, WalletSchema
-from .models import db, User, Wallet
+from .models import db, User, Wallet, Funding
 from .utils import response_error, msisdn_formatter
 
 blueprint = Blueprint("api", __name__)
@@ -67,5 +67,23 @@ def wallet_endpoint(wallet_id):
     wallet = Wallet.query.filter(or_(Wallet.id == wallet_id, Wallet.uuid == wallet_id)).one_or_none()
     if not wallet:
         return response_error(404, "Wallet not found", 404)
+    schema = WalletSchema()
+    return jsonify(schema.dump(wallet))
+
+
+@blueprint.route('/wallets/<wallet_id>/deposit', methods=['POST'])
+def deposit_endpoint(wallet_id):
+    wallet = Wallet.query.filter(or_(Wallet.id == wallet_id, Wallet.uuid == wallet_id)).one_or_none()
+    if not wallet:
+        return response_error(404, "Wallet not found", 404)
+
+    data = request.get_json(force=True)
+    if 'mode' not in data.keys() or 'amount' not in data.keys():
+        return response_error(400, "Bad request. Mode and amount must be provided")
+
+    wallet.funding_history.append(Funding(mode=data.get('mode'), amount=data.get('amount')))
+    wallet.balance += data.get('amount')
+    wallet.save()
+
     schema = WalletSchema()
     return jsonify(schema.dump(wallet))

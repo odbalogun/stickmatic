@@ -87,7 +87,6 @@ class Wallet(BaseModel):
         super().__init__(**kwargs)
 
 
-
 class Funding(BaseModel):
     __tablename__ = 'funding'
 
@@ -96,3 +95,5 @@ class Funding(BaseModel):
     mode = db.Column(db.String(255), default='paystack')
     amount = db.Column(db.Integer, default=0)
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+
+    wallet = db.relationship('Wallet', backref='funding_history')
