@@ -80,9 +80,12 @@ class Wallet(BaseModel):
 
     user = db.relationship('User', backref=backref('wallet', uselist=False))
 
-    def __init__(self):
-        # generate wallet uuid
-        self.uuid = str(uuid.uuid4()).rsplit('-', 1)[0]
+    def __init__(self, **kwargs):
+        if not kwargs.get(uuid):
+            # generate wallet uuid
+            self.uuid = str(uuid.uuid4()).rsplit('-', 1)[0]
+        super().__init__(**kwargs)
+
 
 
 class Funding(BaseModel):

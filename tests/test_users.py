@@ -1,5 +1,4 @@
 import json
-from app.schemas import UserSchema
 from app.models import User
 
 
@@ -38,7 +37,7 @@ def test_user_can_be_updated(client, init_database):
     payload = dict(first_name="Joyner", last_name="Lucas")
     response = client.put('/api/users/1', data=json.dumps(payload))
 
-    assert response.status_code == 201
+    assert response.status_code == 200
     # check that first_name and last_name have been updated
     user = User.query.get(1)
     assert user.first_name == "Joyner"

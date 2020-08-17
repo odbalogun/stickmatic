@@ -8,6 +8,10 @@ class WalletSchema(ma.SQLAlchemyAutoSchema):
         model = Wallet
         include_fk = True
 
+    @post_load
+    def make_object(self, data, **kwargs):
+        return Wallet(**data)
+
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

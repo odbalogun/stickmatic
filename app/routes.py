@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
-from .schemas import UserSchema
+from sqlalchemy import or_
+from .schemas import UserSchema, WalletSchema
 from .models import db, User, Wallet
 from .utils import response_error, msisdn_formatter
 
@@ -48,4 +49,19 @@ def user_endpoint(user_id):
     user.save()
 
     schema = UserSchema()
-    return jsonify(schema.dump(user)), 201
+    return jsonify(schema.dump(user)), 200
+
+
+@blueprint.route('/wallets', methods=['GET'])
+def wallets_endpoint():
+    schema = WalletSchema(many=True)
+    return jsonify(schema.dump(Wallet.query.all()))
+
+
+@blueprint.route('/wallets/<wallet_id>', methods=['GET'])
+def wallet_endpoint(wallet_id):
+    wallet = Wallet.query.filter(or_(Wallet.id == wallet_id, Wallet.uuid == wallet_id)).one_or_none()
+    if not wallet:
+        return response_error(404, "Wallet not found", 404)
+    schema = WalletSchema()
+    return jsonify(schema.dump(wallet))
