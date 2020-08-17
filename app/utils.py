@@ -7,8 +7,8 @@ def msisdn_formatter(msisdn):
     """
     Formats the number to the International format with the Nigerian prefix
     """
-    # remove +
-    msisdn = str(msisdn).replace('+', '')
+    # remove + and spaces
+    msisdn = str(msisdn).replace('+', '').replace(' ', '')
 
     if msisdn[:3] == '234':
         return msisdn
