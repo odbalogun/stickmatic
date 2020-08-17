@@ -17,6 +17,9 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     ma.init_app(app)
 
+    from app.routes import blueprint as api_bp
+    app.register_blueprint(api_bp, url_prefix='/api')
+
     return app
 
 
