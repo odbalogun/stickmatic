@@ -30,7 +30,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User
         include_fk = True
-        exclude = ['_msisdn', 'purchase_history']
+        exclude = ['_msisdn']
         readonly = ['id', 'wallet']
 
     msisdn = fields.String(required=True)

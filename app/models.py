@@ -8,7 +8,7 @@ import time
 import uuid
 
 
-__all__ = ['User', 'Wallet', 'Funding']
+DEPOSIT_STATUS = ['Pending', 'Paid', 'Failed Payment']
 
 
 class BaseModel(db.Model):
@@ -75,6 +75,12 @@ class User(BaseModel):
             purchase_list.append(x.json)
         return purchase_list
 
+    @property
+    def identity_email(self):
+        if self.email:
+            return self.email
+        return f"{self.msisdn}@barillo.net"
+
 
 class Wallet(BaseModel):
     __tablename__ = 'wallets'
@@ -117,3 +123,23 @@ class PurchaseHistory(BaseModel):
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
 
     wallet = db.relationship('Wallet', backref='purchase_history')
+
+
+class DepositTransaction(BaseModel):
+    __tablename__ = 'deposit_transactions'
+
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Integer, default=0)
+    mode = db.Column(db.String(255), default='paystack')
+    # 0 for pending - 1 for paid - 2 for failure
+    status = db.Column(db.Integer, default=0)
+    txn_reference = db.Column(db.String(50), nullable=True)
+    note = db.Column(db.Text, nullable=True)
+    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+
+    user = db.relationship('User', backref=backref('deposits', uselist=False))
+
+    @property
+    def status_label(self):
+        return DEPOSIT_STATUS[self.status]

@@ -13,11 +13,10 @@ class Config(object):
     ENV = 'development'
     TESTING = True
     FLASK_DEBUG = 1
+    PAYSTACK_KEY = os.environ.get('PAYSTACK_KEY')
 
 
-class TestConfig(object):
-    TESTING = True
-    DEBUG = True
+class TestConfig(Config):
     ENV = 'testing'
     BCRYPT_LOG_ROUNDS = 3
     WTF_CSRF_ENABLED = False
@@ -25,7 +24,7 @@ class TestConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-class ProductionConfig(object):
+class ProductionConfig(Config):
     DEBUG = False
     ENV = 'production'
     TESTING = False
